@@ -38,7 +38,11 @@ export function createApp(): Express {
     next();
   });
 
-  app.use('/api', apiRouter());
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+app.use('/api', apiRouter());
 
   app.use(notFoundHandler);
   app.use(errorHandler);

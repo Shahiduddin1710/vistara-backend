@@ -1,10 +1,4 @@
-/**
- * Safety clearance service.
- *
- * Clearances are lazily created: reading one for a subject that has never been
- * assessed materialises the default checklist in `PENDING`, so the gate always
- * has an explicit record to refuse entry against instead of an absent row.
- */
+
 import { getStore } from '../stores';
 import { ApiError } from '../utils/ApiError';
 import {
