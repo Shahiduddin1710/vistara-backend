@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Runtime connection — Neon's pooled (PgBouncer) endpoint, for queries.
+  url      = env("DATABASE_URL")
+  // Migration / `db push` connection — Neon's direct (unpooled) endpoint.
+  // The pooler does not support the session-level features migrations need.
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  SUPERVISOR
+  GATE_OFFICER
+}
+
+enum VisitorStatus {
+  REGISTERED
+  INSIDE
+  EXITED
+  DENIED
+}
+
+enum VisitStatus {
+  INSIDE
+  EXITED
+}
+
+enum ClearanceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NOT_REQUIRED
+}
+
+enum ClearanceSubjectType {
+  VISITOR
+  EMPLOYEE
+}
+
+enum IdType {
+  dl
+  passport
+  gov_id
+  contractor_badge
+}
+
+enum VisitorCategory {
+  vendor
+  client
+  contractor
+  vip
+  other
+}
+
+enum CardType {
+  GREEN
+  WHITE
+}
+
+enum CardStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  SUSPENDED
+  PENDING
+}
+
+enum TelemetryType {
+  ENTRY
+  EXIT
+}
+
+model Staff {
+  id             String   @id @default(cuid())
+  staffId        String   @unique
+  name           String
+  designation    String
+  role           Role
+  passwordHash   String
+  gateCode       String
+  shift          String
+  shiftStart     String
+  shiftEnd       String
+  phone          String
+  email          String
+  securityLevel  String
+  avatarUrl      String?
+  authExpiresAt  DateTime?
+  createdAt      DateTime @default(now())
+
+  @@index([gateCode])
+}
+
+// Gates are referenced by `code` (GATE-01 / GATE-02) from Staff, Visitor and
+// Visit rather than by a foreign key, so this is a standalone lookup table.
+model Gate {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+  lane String
+}
+
+model Visitor {
+  id              String          @id @default(cuid())
+  visitorCode     String          @unique
+  fullName        String
+  phone           String
+  company         String
+  category        VisitorCategory
+  idType          IdType
+  idNumber        String
+  hostPerson      String
+  purpose         String
+  duration        String
+  allowedZones    String
+  photoUrl        String?
+  status          VisitorStatus   @default(REGISTERED)
+  clearanceStatus ClearanceStatus @default(PENDING)
+  escortRequired  Boolean         @default(false)
+  vehicleNo       String?
+  notes           String?
+  entryGateCode   String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  lastEntryAt     DateTime?
+
+  visits Visit[]
+
+  @@unique([idType, idNumber])
+  @@index([status])
+  @@index([fullName])
+}
+
+model Visit {
+  id              String      @id @default(cuid())
+  visitorId       String
+  visitorCode     String
+  visitorName     String
+  gateCode        String
+  exitGateCode    String?
+  status          VisitStatus @default(INSIDE)
+  entryAt         DateTime    @default(now())
+  exitAt          DateTime?
+  expectedExitAt  DateTime?
+  checklist       Json?
+  notes           String?
+
+  visitor Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+
+  @@index([visitorId])
+  @@index([status])
+  @@index([entryAt])
+  @@index([gateCode])
+}
+
+model Employee {
+  id                  String          @id @default(cuid())
+  employeeId          String          @unique
+  name                String
+  designation         String
+  department          String
+  company             String
+  photoUrl            String?
+  cardNumber          String          @unique
+  cardType            CardType
+  cardStatus          CardStatus      @default(ACTIVE)
+  accessClassification String
+  validityFrom        DateTime
+  validityTo          DateTime
+  securityTier        String
+  shiftWindow         String
+  safetyProtocol      String
+  entryPoints         String[]
+  clearanceStatus     ClearanceStatus @default(PENDING)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  telemetry Telemetry[]
+
+  @@index([cardType])
+  @@index([name])
+}
+
+model Telemetry {
+  id         String        @id @default(cuid())
+  employeeId String
+  gate       String
+  type       TelemetryType
+  at         DateTime      @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([at])
+}
+
+model Clearance {
+  id          String              @id @default(cuid())
+  subjectType ClearanceSubjectType
+  subjectId   String
+  overall     ClearanceStatus     @default(PENDING)
+  updatedBy   String?
+  updatedAt   DateTime            @updatedAt
+  createdAt   DateTime            @default(now())
+
+  items ClearanceItem[]
+
+  @@unique([subjectType, subjectId])
+  @@index([subjectId])
+}
+
+model ClearanceItem {
+  id         String          @id @default(cuid())
+  clearanceId String
+  key        String
+  label      String
+  required   Boolean         @default(true)
+  status     ClearanceStatus @default(PENDING)
+  remarks    String?
+  updatedBy  String?
+  updatedAt  DateTime?
+
+  clearance Clearance @relation(fields: [clearanceId], references: [id], onDelete: Cascade)
+
+  @@index([clearanceId])
+}
