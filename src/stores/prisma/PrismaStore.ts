@@ -52,8 +52,8 @@ function toStaff(row: Row): Staff {
     phone: String(row.phone),
     email: String(row.email),
     securityLevel: String(row.securityLevel),
-    avatarUrl: iso(row.avatarUrl as string | null),
-    authExpiresAt: iso(row.authExpiresAt as Date | null),
+    avatarUrl: row.avatarUrl != null ? String(row.avatarUrl) : null,
+    authExpiresAt: iso(row.authExpiresAt as Date | string | null),
   };
 }
 
@@ -71,21 +71,20 @@ function toVisitor(row: Row): Visitor {
     purpose: String(row.purpose),
     duration: String(row.duration),
     allowedZones: String(row.allowedZones),
-    photoUrl: iso(row.photoUrl as string | null),
+    photoUrl: row.photoUrl != null ? String(row.photoUrl) : null,
     status: asEnum(row.status, 'REGISTERED'),
     clearanceStatus: asEnum(row.clearanceStatus, 'PENDING'),
     escortRequired: Boolean(row.escortRequired),
-    vehicleNo: iso(row.vehicleNo as string | null),
-    notes: iso(row.notes as string | null),
+    vehicleNo: row.vehicleNo != null ? String(row.vehicleNo) : null,
+    notes: row.notes != null ? String(row.notes) : null,
     entryGateCode: String(row.entryGateCode),
-    createdAt: isoRequired(row.createdAt),
+    createdAt: isoRequired(row.createdAt as Date | string | undefined),
     lastEntry:
       row.lastEntryAt != null
-        ? { gateCode: String(row.entryGateCode), at: isoRequired(row.lastEntryAt) }
+        ? { gateCode: String(row.entryGateCode), at: isoRequired(row.lastEntryAt as Date | string | undefined) }
         : null,
   };
 }
-
 function toVisit(row: Row): Visit {
   const rawChecklist = row.checklist;
   const checklist = Array.isArray(rawChecklist)
@@ -97,13 +96,13 @@ function toVisit(row: Row): Visit {
     visitorCode: String(row.visitorCode),
     visitorName: String(row.visitorName),
     gateCode: String(row.gateCode),
-    exitGateCode: iso(row.exitGateCode as string | null),
+    exitGateCode: row.exitGateCode != null ? String(row.exitGateCode) : null,
     status: asEnum(row.status, 'INSIDE'),
-    entryAt: isoRequired(row.entryAt),
-    exitAt: iso(row.exitAt as Date | null),
-    expectedExitAt: iso(row.expectedExitAt as Date | null),
+    entryAt: isoRequired(row.entryAt as Date | string | undefined),
+    exitAt: iso(row.exitAt as Date | string | null),
+    expectedExitAt: iso(row.expectedExitAt as Date | string | null),
     checklist,
-    notes: iso(row.notes as string | null),
+    notes: row.notes != null ? String(row.notes) : null,
   };
 }
 
@@ -118,13 +117,13 @@ function toEmployee(row: Row): Employee {
     designation: String(row.designation),
     department: String(row.department),
     company: String(row.company),
-    photoUrl: iso(row.photoUrl as string | null),
+    photoUrl: row.photoUrl != null ? String(row.photoUrl) : null,
     cardNumber: String(row.cardNumber),
     cardType: asEnum(row.cardType, 'GREEN'),
     cardStatus: asEnum(row.cardStatus, 'ACTIVE'),
     accessClassification: String(row.accessClassification),
-    validityFrom: isoRequired(row.validityFrom),
-    validityTo: isoRequired(row.validityTo),
+    validityFrom: isoRequired(row.validityFrom as Date | string | undefined),
+    validityTo: isoRequired(row.validityTo as Date | string | undefined),
     securityTier: String(row.securityTier),
     shiftWindow: String(row.shiftWindow),
     safetyProtocol: String(row.safetyProtocol),
@@ -132,17 +131,15 @@ function toEmployee(row: Row): Employee {
     clearanceStatus: asEnum(row.clearanceStatus, 'PENDING'),
   };
 }
-
 function toTelemetry(row: Row): Telemetry {
   return {
     id: String(row.id),
     employeeId: String(row.employeeId),
     gate: String(row.gate),
     type: asEnum(row.type, 'ENTRY'),
-    at: isoRequired(row.at),
+    at: isoRequired(row.at as Date | string | undefined),
   };
 }
-
 function toClearance(row: Row): Clearance {
   const rawItems = Array.isArray(row.items) ? (row.items as Row[]) : [];
   return {
@@ -150,17 +147,17 @@ function toClearance(row: Row): Clearance {
     subjectType: asEnum(row.subjectType, 'VISITOR'),
     subjectId: String(row.subjectId),
     overall: asEnum(row.overall, 'PENDING'),
-    updatedBy: iso(row.updatedBy as string | null),
-    updatedAt: iso(row.updatedAt as Date | null),
+    updatedBy: row.updatedBy != null ? String(row.updatedBy) : null,
+    updatedAt: iso(row.updatedAt as Date | string | null),
     items: rawItems.map((item) => ({
       id: String(item.id),
       key: String(item.key),
       label: String(item.label),
       required: Boolean(item.required),
       status: asEnum(item.status, 'PENDING'),
-      remarks: iso(item.remarks as string | null),
-      updatedBy: iso(item.updatedBy as string | null),
-      updatedAt: iso(item.updatedAt as Date | null),
+      remarks: item.remarks != null ? String(item.remarks) : null,
+      updatedBy: item.updatedBy != null ? String(item.updatedBy) : null,
+      updatedAt: iso(item.updatedAt as Date | string | null),
     })),
   };
 }

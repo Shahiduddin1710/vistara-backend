@@ -204,6 +204,24 @@ export interface LoginResponse {
   staff: Staff;
 }
 
+export interface DeviceStatus {
+  status: string;
+  label: string;
+}
+
+export interface SecurityAudit {
+  verifiedAt: string;
+  status: string;
+}
+
+export interface ProfileSettings {
+  biometricScanner: DeviceStatus;
+  badgePrinter: DeviceStatus;
+  turnstileAutoRelease: boolean;
+  audioAlert: string;
+  securityAudit: SecurityAudit;
+}
+
 export interface HealthResponse {
   status: string;
   version: string;

@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import {
+  ClearanceStatus,
   EMPLOYEE_CLEARANCE_ITEMS,
   VISITOR_CLEARANCE_ITEMS,
   Employee,
@@ -692,14 +693,14 @@ export function seedDwell(visitorId: string): number {
   return OPEN_DWELL_MIN[visitorId] ?? between(20, 180);
 }
 
-/* ── Clearances ─────────────────────────────────────────────────────────── */
 function buildVisitorClearances(): ClearanceRecord[] {
   return VISITOR_SPECS.map((spec) => {
-    const items: ClearanceItemDraft[] = VISITOR_CLEARANCE_ITEMS.map((item) => ({
+    const items = VISITOR_CLEARANCE_ITEMS.map((item, idx) => ({
+      id: `clritem-visitor-${spec.id}-${idx}`,
       key: item.key,
       label: item.label,
       required: item.required,
-      status: spec.clearanceStatus === 'PENDING' ? 'PENDING' : spec.clearanceStatus,
+      status: (spec.clearanceStatus === 'PENDING' ? 'PENDING' : spec.clearanceStatus) as ClearanceStatus,
       remarks:
         spec.clearanceStatus === 'REJECTED' && item.key === 'gov_id'
           ? 'Document could not be validated against the watchlist.'
@@ -724,11 +725,12 @@ function buildVisitorClearances(): ClearanceRecord[] {
 
 function buildEmployeeClearances(): ClearanceRecord[] {
   return EMPLOYEES.map((emp) => {
-    const items: ClearanceItemDraft[] = EMPLOYEE_CLEARANCE_ITEMS.map((item) => ({
+    const items = EMPLOYEE_CLEARANCE_ITEMS.map((item, idx) => ({
+      id: `clritem-employee-${emp.id}-${idx}`,
       key: item.key,
       label: item.label,
       required: item.required,
-      status: emp.clearanceStatus,
+      status: emp.clearanceStatus as ClearanceStatus,
       remarks: emp.clearanceStatus === 'REJECTED' ? 'Safety induction evidence not supplied.' : 'Verified against HR record.',
       updatedBy: emp.clearanceStatus === 'PENDING' ? null : 'Kavita Pillai',
       updatedAt: emp.clearanceStatus === 'PENDING' ? null : dateAtOffset(-7, '09:20').toISOString(),

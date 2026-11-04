@@ -107,7 +107,7 @@ export async function recordExit(input: ExitInput): Promise<Visit> {
   const exitAt = new Date();
   const closed = await store.updateVisit(visit.id, {
     status: 'EXITED',
-    exitAt,
+    exitAt: exitAt.toISOString(),
     exitGateCode: input.gateCode,
     notes: input.notes ?? visit.notes,
   });

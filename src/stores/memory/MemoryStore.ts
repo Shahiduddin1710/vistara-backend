@@ -23,6 +23,7 @@ import { ApiError } from '../../utils/ApiError';
 import {
   ClearanceDraft,
   ClearanceItemDraft,
+  ClearanceRecord,
   DataStore,
   StaffRecord,
 } from '../Store';
@@ -53,7 +54,7 @@ export class MemoryStore implements DataStore {
   private visitors: Visitor[];
   private visits: Visit[];
   private employees: Employee[];
-  private clearances: Clearance[];
+  private clearances: ClearanceRecord[];
   private telemetry: Telemetry[];
   private visitorSeq: number;
 
@@ -407,10 +408,10 @@ export class MemoryStore implements DataStore {
     }
   }
 
-  private defaultVisitorItems(): ClearanceItemDraft[] {
-    // Imported lazily to keep this module free of a circular import at load.
+  private defaultVisitorItems(): Clearance['items'] {
     const { VISITOR_CLEARANCE_ITEMS } = require('../../models/types') as typeof import('../../models/types');
     return VISITOR_CLEARANCE_ITEMS.map((item) => ({
+      id: uid('clritem'),
       key: item.key,
       label: item.label,
       required: item.required,
@@ -420,7 +421,6 @@ export class MemoryStore implements DataStore {
       updatedAt: null,
     }));
   }
-
   /** Base figure the dashboard adds live counts on top of. */
   static get expectedTodayBase(): number {
     return EXPECTED_TODAY_BASE;
