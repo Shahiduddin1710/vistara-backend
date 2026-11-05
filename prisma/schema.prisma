@@ -46,8 +46,8 @@ enum IdType {
   passport
   gov_id
   contractor_badge
+  aadhar
 }
-
 enum VisitorCategory {
   vendor
   client

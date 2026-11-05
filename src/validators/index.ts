@@ -16,7 +16,7 @@ const gateCode = z
   .toUpperCase()
   .regex(/^GATE-\d{2}$/, 'Gate must be GATE-01 or GATE-02');
 
-const idType = z.enum(['dl', 'passport', 'gov_id', 'contractor_badge']);
+const idType = z.enum(['dl', 'passport', 'gov_id', 'contractor_badge', 'aadhar']);
 const visitorCategory = z.enum(['vendor', 'client', 'contractor', 'vip', 'other']);
 const clearanceStatus = z.enum(['PENDING', 'APPROVED', 'REJECTED', 'NOT_REQUIRED']);
 
